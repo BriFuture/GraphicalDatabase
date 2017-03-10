@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 
 public class DB {
-//	static final String DATABASE = "";
+	static final String DATABASE = "jdbc:sqlite:";
 	private String dbPath = "";
 	private Connection conn = null;
 	private Statement state = null;
@@ -36,7 +36,7 @@ public class DB {
 	 * @param dbPath 数据库文件的绝对路径
 	 */
 	public void setDbPath(String dbPath) {
-		this.dbPath = "jdbc:sqlite:"+ dbPath;
+		this.dbPath = DATABASE + dbPath;
 	}
 	
 	/**

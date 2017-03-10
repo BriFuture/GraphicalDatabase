@@ -10,11 +10,11 @@ public class GlobalDefines {
 	 * 统一设置所有窗口图标的路径
 	 */
 	public static final String ICON_PATH = "/assets/img/";
-	public static final String WINDOW_ICON = ICON_PATH + "icon.png";
-	public static final String CONNECT_DATABASE = ICON_PATH + "connect_database.png";
-	public static final String DATABASES = ICON_PATH + "databases.png";
-	public static final String DISCONNECT_DATABASE = ICON_PATH + "disconnect_database.png";
-	public static final String NEW_DATABASE = ICON_PATH + "new_database.png";
+	public static final String WINDOW_ICON 				= ICON_PATH + "icon.png";
+	public static final String ICON_CONNECT_DATABASE 	= ICON_PATH + "connect_database.png";
+	public static final String ICON_DATABASES 			= ICON_PATH + "databases.png";
+	public static final String ICON_DISCONNECT_DATABASE = ICON_PATH + "disconnect_database.png";
+	public static final String ICON_NEW_DATABASE 		= ICON_PATH + "new_database.png";
 	
 	
 	private static GlobalDefines gd;

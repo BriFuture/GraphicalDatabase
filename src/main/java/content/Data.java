@@ -1,10 +1,11 @@
 package content;
 
 import java.io.File;
-import java.lang.Thread.State;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 
 import database.DB;
 import database.DBManager;
@@ -15,6 +16,7 @@ public class Data {
 	private String path;
 	private DBManager mgr;
 	private DB db;
+	private Statement state;
 	
 	
 	public Data(File f) {
@@ -22,6 +24,7 @@ public class Data {
 		path = f.getAbsolutePath();
 		mgr = DBManager.getManager();
 		db = mgr.newDBInstance(dbFile.getAbsolutePath());
+		state = db.getStatement();
 	}
 
 	/**
@@ -60,18 +63,41 @@ public class Data {
 
 	/**
 	 * 返回数据库的所有 table
+	 * @return 
 	 */
-	public void getTables() {
+	
+	public Set<SqliteMaster> getTables() {
+		HashSet<SqliteMaster> set = new HashSet<SqliteMaster>();
 		try {
-			Statement state = db.getStatement();
 			ResultSet rs = state.executeQuery("select * from sqlite_master where type=\"table\"");
-			while(rs.next()) {
-				System.out.println("Type: " + rs.getString("type") + "  name: " + rs.getString("name") );
+			while( rs.next() ) {
+				set.add(new SqliteMaster(rs.getString(SqliteMaster.C_TYPE), 
+										rs.getString(SqliteMaster.C_NAME), 
+										rs.getString(SqliteMaster.C_TBL_NAME), 
+										rs.getInt(SqliteMaster.C_ROOTPAGE), 
+										rs.getString(SqliteMaster.C_SQL)
+										)
+						);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+		} catch ( SQLException e) {
 			e.printStackTrace();
+			
 		}
+		return set;
 		
+	}
+	
+	/**
+	 *  主动调用，关闭 state 
+	*/
+	public void closeState() {
+		if( state != null) {
+			try {
+				state.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
