@@ -9,6 +9,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
+import dao.SqliteMaster;
+
 
 public class MWTreeModel extends DefaultTreeModel {
 	
@@ -48,28 +50,46 @@ public class MWTreeModel extends DefaultTreeModel {
 			sqlite_master.add(smnode);
 		}
 		
-		HashSet<SqliteMaster> smset = (HashSet<SqliteMaster>) d.getTables();
-		
-		d.closeState();
-
-		DefaultMutableTreeNode tables   = new DefaultMutableTreeNode("Tables(" + smset.size() + ")", true);
-		for(SqliteMaster sm: smset) {
-			DefaultMutableTreeNode smnode = new DefaultMutableTreeNode(sm.getName(), false);
-			tables.add(smnode);
-		}
+		// 添加 tables
+		DefaultMutableTreeNode tables   = new DefaultMutableTreeNode("Tables", true);
+		HashSet<SqliteMaster> smAllSet = (HashSet<SqliteMaster>) d.getMasterSet();
+		addSetToNode(smAllSet, "table", tables);
 			
-		DefaultMutableTreeNode views 	= new DefaultMutableTreeNode("Vables", true);
+		// 添加 Views
+		DefaultMutableTreeNode views 	= new DefaultMutableTreeNode("Views", true);
+		addSetToNode(smAllSet, "view", views);
 		DefaultMutableTreeNode indexes 	= new DefaultMutableTreeNode("Indexes", true);
+		addSetToNode(smAllSet, "index", indexes);
 		DefaultMutableTreeNode triggers = new DefaultMutableTreeNode("Triggers", true);
+		addSetToNode(smAllSet, "trigger", triggers);
 		
-		node.add(masterTable);
 		masterTable.add(sqlite_master);
-		node.add(tables);
-		node.add(views);
-		node.add(indexes);
-		node.add(triggers);
+		addNodeToPar(masterTable, node);
+		addNodeToPar(tables, node);
+		addNodeToPar(views, node);
+		addNodeToPar(indexes, node);
+		addNodeToPar(triggers, node);
 		
 		insertNodeInto(node, root, getChildCount(root));
+	}
+	
+	/**
+	 * 向数据库节点添加 3 级节点
+	 * 同时更新 3 级节点的名字
+	 * @param node  三级节点
+	 * @param to 	数据库节点
+	 */
+	private void addNodeToPar(DefaultMutableTreeNode node, DefaultMutableTreeNode par) {
+		par.add(node);
+		node.setUserObject(node.getUserObject() + "(" + node.getChildCount() + ")");
+	}
+	
+	private void addSetToNode(HashSet<SqliteMaster> set, String type, DefaultMutableTreeNode node) {
+		HashSet<SqliteMaster> smset = SqliteMaster.getSetByType(set, type);
+		for(SqliteMaster sm: smset) {
+			DefaultMutableTreeNode smnode = new DefaultMutableTreeNode(sm.getName(), false);
+			node.add(smnode);
+		}
 	}
 	
 	

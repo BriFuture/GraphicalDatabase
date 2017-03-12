@@ -7,9 +7,15 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
+import dao.SqliteMaster;
 import database.DB;
 import database.DBManager;
 
+/**
+ * 用于保存数据库文件，提供执行 SQL 的接口
+ * @author future
+ *
+ */
 public class Data {
 	/* 数据库绝对路径 */
 	private File dbFile;
@@ -17,6 +23,9 @@ public class Data {
 	private DBManager mgr;
 	private DB db;
 	private Statement state;
+	
+	//
+	private HashSet<SqliteMaster> smset;
 	
 	
 	public Data(File f) {
@@ -60,31 +69,54 @@ public class Data {
 	public String toString() {
 		return path.toString();
 	}
+	
+	public Object excuteCustomSql(String sql) {
+		try {
+			ResultSet rs = state.executeQuery(sql);
+			rs.wasNull();
+		} catch ( SQLException e) {
+			e.printStackTrace();
+			// 
+			System.out.println(e.getMessage());
+		} finally {
+			closeState();
+		}
+		return null;
+	}
 
 	/**
 	 * 返回数据库的所有 table
 	 * @return 
 	 */
 	
-	public Set<SqliteMaster> getTables() {
-		HashSet<SqliteMaster> set = new HashSet<SqliteMaster>();
-		try {
-			ResultSet rs = state.executeQuery("select * from sqlite_master where type=\"table\"");
-			while( rs.next() ) {
-				set.add(new SqliteMaster(rs.getString(SqliteMaster.C_TYPE), 
-										rs.getString(SqliteMaster.C_NAME), 
-										rs.getString(SqliteMaster.C_TBL_NAME), 
-										rs.getInt(SqliteMaster.C_ROOTPAGE), 
-										rs.getString(SqliteMaster.C_SQL)
-										)
-						);
+	public Set<SqliteMaster> getMasterSet() {
+		if( smset == null ) {
+			smset = new HashSet<SqliteMaster>();
+			try {
+				ResultSet rs = state.executeQuery("select * from sqlite_master");
+				while( rs.next() ) {
+					smset.add(new SqliteMaster(rs.getString(SqliteMaster.C_TYPE), 
+											rs.getString(SqliteMaster.C_NAME), 
+											rs.getString(SqliteMaster.C_TBL_NAME), 
+											rs.getInt(SqliteMaster.C_ROOTPAGE), 
+											rs.getString(SqliteMaster.C_SQL)
+											)
+							);
+				}
+			} catch ( SQLException e) {
+				e.printStackTrace();
+			} finally {
+				closeState();
 			}
-		} catch ( SQLException e) {
-			e.printStackTrace();
-			
 		}
-		return set;
-		
+		return smset;
+	}
+	
+	public Set<SqliteMaster> getMasterSet(boolean restate) {
+		if(restate) {
+			smset = null;
+		}
+		return getMasterSet();
 	}
 	
 	/**

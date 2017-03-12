@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
@@ -77,7 +78,7 @@ public class MWMenuBar implements ActionListener {
 	
 	private JMenuItem helpAbout;
 	
-	private ArrayList<File> recentUsedFiles = new ArrayList<File>();
+	private HashSet<File> recentUsedFiles = new HashSet<File>();
 	private ArrayList<File> openedFiles = new ArrayList<File>();
 
 	
@@ -226,9 +227,6 @@ public class MWMenuBar implements ActionListener {
 	}
 	
 
-	
-	
-	
 	/**
 	 * @return the recentUsed
 	 */
@@ -236,12 +234,11 @@ public class MWMenuBar implements ActionListener {
 		return recentUsedFiles.size();
 	}
 
-	
 
 	/**
 	 * @return the recentUsedFiles
 	 */
-	public ArrayList<File> getRecentUsedFiles() {
+	public HashSet<File> getRecentUsedFiles() {
 		return recentUsedFiles;
 	}
 
@@ -249,7 +246,7 @@ public class MWMenuBar implements ActionListener {
 	 * 初始化时，传入最近使用的文件
 	 * @param recentUsedFiles the recentUsedFiles to set
 	 */
-	public void setRecentUsedFiles(ArrayList<File> recentUsedFiles) {
+	public void setRecentUsedFiles(HashSet<File> recentUsedFiles) {
 		this.recentUsedFiles = recentUsedFiles;
 	}
 	
@@ -280,9 +277,10 @@ public class MWMenuBar implements ActionListener {
 	}
 	
 	/**
-	 * 关闭所有文件时，从菜单栏中去掉所有 MenuItem
+	 * 关闭所有文件时，从菜单栏中去掉所有有关数据库文件的  MenuItem
 	 */
 	public void removeAllOpenedFile() {
+		this.recentUsedFiles.addAll(this.openedFiles);
 		this.openedFiles.clear();
 		update();
 	}
@@ -302,7 +300,7 @@ public class MWMenuBar implements ActionListener {
 			System.out.println("[Info] no recent Used Files");
 			optionRecentUsed.add(noused);
 		} else {
-			menuDatabases.removeAll();
+			optionRecentUsed.removeAll();
 			JMenuItem mi; 
 			for(File f : recentUsedFiles) {
 				mi = new JMenuItem(f.getAbsolutePath());
@@ -345,6 +343,7 @@ public class MWMenuBar implements ActionListener {
 //			System.out.println("[Info] disconnect database: " + f.getAbsolutePath());
 		}
 		if( source == optionDisconnectAllDatabase ) {
+			System.out.println("[Info] Disconnect All Database!");
 			mw.closeAllFiles();
 		}
 		if( source == optionNewDatabase ) {

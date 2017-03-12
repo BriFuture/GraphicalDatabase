@@ -2,6 +2,7 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.io.File;
 
 import java.util.ArrayList;
@@ -9,18 +10,30 @@ import java.util.HashMap;
 import java.util.Set;
 
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import content.Data;
 
 public class MainWindow extends BaseWindow{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private String windowTitle = "GraphicalDatabase";
 	
 	private MWMenuBar menubar;
 	private MWTree tree;
+	private MWTabbedPanel tabbedpanel;
 	
-	private HashMap<File, Data> dataMap;
+	private JPanel statebar;
+	private JTextField stateFileName;
+	
+	private HashMap<File, Data> dataMap = new HashMap<File, Data>();
 	
 	private File openedFile;
 	private ArrayList<File> addedFiles = new ArrayList<File>();
@@ -31,10 +44,6 @@ public class MainWindow extends BaseWindow{
 	private FileNameExtensionFilter all;
 	
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 	
 	public MainWindow() {
 		setTitle(windowTitle);
@@ -50,24 +59,21 @@ public class MainWindow extends BaseWindow{
 		menubar = new MWMenuBar(this);
 		setJMenuBar(menubar.getMenuBar());
 		// 设置 Panel
-		MWTabbedPanel panel = new MWTabbedPanel(this);
+		tabbedpanel = new MWTabbedPanel(this);
 		// 设置左侧树
 		tree = new MWTree(this);
+		JScrollPane scrollPane = new JScrollPane(tree.getTree());
+		scrollPane.setPreferredSize(new Dimension(200, 600));
+		// 状态栏
+		initStatebar();
 
 		// 创建一个 SplitPane 用来分区
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tree.getTree(), panel.getTabbedPane());
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, tabbedpanel.getTabbedPane());
 		splitPane.setOneTouchExpandable(true);
-		Dimension minimumSize = new Dimension(200, 400);
-		tree.getTree().setMinimumSize(minimumSize);
-		panel.getTabbedPane().setMinimumSize(minimumSize);
-		
 		getContentPane().add(BorderLayout.CENTER, splitPane);
-		
-		dataMap = new HashMap<File, Data>();
-		
 	}
 	
-	/* 初始化选择器 */
+	/* 初始化文件选择器 */
 	private void initChooser() {
 		chooser = new JFileChooser("C:\\Users\\future\\Documents\\my games\\Sid Meier's Civilization 5\\cache\\");
 		sqlite = new FileNameExtensionFilter("SQLite DB Files(*.sqlite)", "sqlite");
@@ -78,7 +84,25 @@ public class MainWindow extends BaseWindow{
 //		chooser.addChoosableFileFilter(all);
 		chooser.setFileFilter(all);
 		chooser.addChoosableFileFilter(sqlite);
+	}
+	
+	/* 初始化状态栏 */
+	private void initStatebar() {
+		statebar = new JPanel();
+		statebar.setLayout(new GridLayout(1, 5));
+		statebar.setAutoscrolls(false);
+
+		Dimension statebarsize = new Dimension(200, 24);
+		statebar.setPreferredSize(statebarsize);
 		
+		stateFileName = new JTextField();
+		stateFileName.setPreferredSize(statebarsize);
+		stateFileName.setEnabled(false);
+		if(openedFile != null)
+			stateFileName.setText(openedFile.getName());
+		
+		statebar.add(stateFileName);
+		getContentPane().add(BorderLayout.SOUTH, statebar);
 	}
 	
 	/**
@@ -88,12 +112,9 @@ public class MainWindow extends BaseWindow{
 		int returnVal = chooser.showOpenDialog(this);
 		File f = null;
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
-//			System.out.println("APPROVE  " + chooser.getSelectedFile().getName());
 			f = chooser.getSelectedFile();
 			addFile(f);
 		}
-		
-//		System.out.println("[Info] connect database: " + f.getAbsolutePath());
 	}
 	
 	/**
@@ -101,24 +122,21 @@ public class MainWindow extends BaseWindow{
 	 * @param f
 	 */
 	public void addFile(File f) {
-		tree.getTree().setRootVisible(false);
 		// 防止重复添加数据库对象
 		if(!dataMap.containsKey(f)) {
+			// update opened File
+			addedFiles.add(f);
+			openAddedFile(f);
+
 			Data d = new Data(f);
 			dataMap.put(f, d);
 			tree.insertRoot(d);
-			// 展开新添加的子树
-			tree.getTree().expandRow(addedFiles.size());
-			addedFiles.add(f);
 			
-			// 更新菜单栏
+			tabbedpanel.add(d);
+			
+			// 菜单栏添加文件
 			menubar.addOpenedFile(f);
-			menubar.update();
 			
-			// update opened File
-			openedFile = f;
-			openAddedFile(f);
-
 			System.out.println("[Info] Add file: " + d);
 		} else {
 			System.out.println("[Warning] File has been added " + f.getAbsolutePath());
@@ -132,7 +150,8 @@ public class MainWindow extends BaseWindow{
 	 * @param f
 	 */
 	public void openAddedFile(File f) {
-		
+		openedFile = f;
+		stateFileName.setText(f.getAbsolutePath());
 	}
 	
 	/**
@@ -142,11 +161,13 @@ public class MainWindow extends BaseWindow{
 	public void closeFile(File f) {
 		addedFiles.remove(f);
 		
+		if(f.equals(openedFile)) {
+			stateFileName.setText("");
+		}
+			
 		// update menubar
 		menubar.addRecentUsedFiles(f);
 		menubar.removeOpenedFile(f);
-		menubar.update();
-		
 	}
 	
 	/**
@@ -164,7 +185,10 @@ public class MainWindow extends BaseWindow{
 	public void closeAllFiles() {
 		// 
 		addedFiles.clear();
-		
+		// 清除 Tree 中的所有节点
+		tree.clearRoot();
+		// 清除  menubar 中的已打开文件
+		menubar.removeAllOpenedFile();
 	}
 	
 	/**

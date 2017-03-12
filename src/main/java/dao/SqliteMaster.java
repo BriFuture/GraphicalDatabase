@@ -1,10 +1,17 @@
-package content;
+package dao;
 
+import java.util.HashSet;
+
+/**
+ * 由于 sqlite_master 表写保护，因此无法写入数据
+ * @author future
+ *
+ */
 public class SqliteMaster {
-	public static final String C_TYPE 	= "type";
-	public static final String C_NAME 	= "name";
-	public static final String C_TBL_NAME = "tbl_name";
-	public static final String C_ROOTPAGE = "rootpage";
+	public static final String C_TYPE 		= "type";
+	public static final String C_NAME 		= "name";
+	public static final String C_TBL_NAME 	= "tbl_name";
+	public static final String C_ROOTPAGE 	= "rootpage";
 	public static final String C_SQL 		= "sql";
 	
 	public static final String[] COLUMNS = {C_TYPE, C_NAME, C_TBL_NAME, C_ROOTPAGE, C_SQL};
@@ -93,6 +100,14 @@ public class SqliteMaster {
 		this.sql = sql;
 	}
 	
-	
+	public static HashSet<SqliteMaster> getSetByType(HashSet<SqliteMaster> sm, String type) {
+		HashSet<SqliteMaster> set = new HashSet<SqliteMaster>();
+		for(SqliteMaster m : sm) {
+			if(m.getType().toUpperCase().equals(type.toUpperCase())) {
+				set.add(m);
+			}
+		}
+		return set;
+	}
 
 }
