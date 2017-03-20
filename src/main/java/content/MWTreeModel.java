@@ -9,7 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-import dao.SqliteMaster;
+import dao.SqliteMasterDao;
 
 
 public class MWTreeModel extends DefaultTreeModel {
@@ -39,20 +39,20 @@ public class MWTreeModel extends DefaultTreeModel {
 	 * @param data
 	 */
 	public void insertIntoRoot(Data d) {
-		DefaultMutableTreeNode node = new DefaultMutableTreeNode(d.getName(), true);
+		DefaultMutableTreeNode node = new DefaultMutableTreeNode(d, true);
 		
 		DefaultMutableTreeNode masterTable 	= new DefaultMutableTreeNode("Master_Table", true);
 		DefaultMutableTreeNode sqlite_master = new DefaultMutableTreeNode("sqlite_master", true);
 
 		// 添加 sqlite_master 表中的列
-		for(String sm: SqliteMaster.COLUMNS) {
+		for(String sm: SqliteMasterDao.COLUMNS) {
 			DefaultMutableTreeNode smnode = new DefaultMutableTreeNode(sm, false); 
 			sqlite_master.add(smnode);
 		}
 		
 		// 添加 tables
 		DefaultMutableTreeNode tables   = new DefaultMutableTreeNode("Tables", true);
-		HashSet<SqliteMaster> smAllSet = (HashSet<SqliteMaster>) d.getMasterSet();
+		HashSet<SqliteMasterDao> smAllSet = (HashSet<SqliteMasterDao>) d.getMasterSet();
 		addSetToNode(smAllSet, "table", tables);
 			
 		// 添加 Views
@@ -84,9 +84,9 @@ public class MWTreeModel extends DefaultTreeModel {
 		node.setUserObject(node.getUserObject() + "(" + node.getChildCount() + ")");
 	}
 	
-	private void addSetToNode(HashSet<SqliteMaster> set, String type, DefaultMutableTreeNode node) {
-		HashSet<SqliteMaster> smset = SqliteMaster.getSetByType(set, type);
-		for(SqliteMaster sm: smset) {
+	private void addSetToNode(HashSet<SqliteMasterDao> set, String type, DefaultMutableTreeNode node) {
+		HashSet<SqliteMasterDao> smset = SqliteMasterDao.getSetByType(set, type);
+		for(SqliteMasterDao sm: smset) {
 			DefaultMutableTreeNode smnode = new DefaultMutableTreeNode(sm.getName(), false);
 			node.add(smnode);
 		}
@@ -103,7 +103,7 @@ public class MWTreeModel extends DefaultTreeModel {
 
 		public void treeNodesChanged(TreeModelEvent e) {
 			System.out.println("treeNodesChanged" + e.getSource());
-			
+			reload( (TreeNode) e.getTreePath() );
 		}
 
 		public void treeNodesInserted(TreeModelEvent e) {
@@ -112,9 +112,11 @@ public class MWTreeModel extends DefaultTreeModel {
 		}
 
 		public void treeNodesRemoved(TreeModelEvent e) {
+			reload( (TreeNode) e.getTreePath() );
 		}
 
 		public void treeStructureChanged(TreeModelEvent e) {
+//			reload( (TreeNode) e.getTreePath() );
 		}
 
 	}

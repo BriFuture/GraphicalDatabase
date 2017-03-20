@@ -52,18 +52,20 @@ public class MainWindow extends BaseWindow{
 		// 最大化
 		setExtendedState(MAXIMIZED_BOTH);	
 		setVisible(true);
+		test();
 	}
 	
 	private void init() {
 		// 设置菜单栏
 		menubar = new MWMenuBar(this);
 		setJMenuBar(menubar.getMenuBar());
-		// 设置 Panel
-		tabbedpanel = new MWTabbedPanel(this);
 		// 设置左侧树
 		tree = new MWTree(this);
 		JScrollPane scrollPane = new JScrollPane(tree.getTree());
-		scrollPane.setPreferredSize(new Dimension(200, 600));
+		scrollPane.setPreferredSize(new Dimension(280, 600));
+		scrollPane.setMinimumSize(new Dimension(200, 600));
+		// 设置 Panel
+		tabbedpanel = new MWTabbedPanel(this);
 		// 状态栏
 		initStatebar();
 
@@ -210,6 +212,10 @@ public class MainWindow extends BaseWindow{
 		return dataMap.keySet();
 	}
 	
-	
+	private void test() {
+		String str = "C:\\Users\\future\\Documents\\my games\\Sid Meier's Civilization 5\\cache\\Localization-Korea.db";
+		File f = new File(str);
+		addFile(f);
+	}
 
 }

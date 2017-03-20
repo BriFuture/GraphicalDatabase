@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
-import dao.SqliteMaster;
+import dao.SqliteMasterDao;
 import database.DB;
 import database.DBManager;
 
@@ -25,7 +25,7 @@ public class Data {
 	private Statement state;
 	
 	//
-	private HashSet<SqliteMaster> smset;
+	private HashSet<SqliteMasterDao> smset;
 	
 	
 	public Data(File f) {
@@ -67,7 +67,7 @@ public class Data {
 	
 	@Override
 	public String toString() {
-		return path.toString();
+		return getName();
 	}
 	
 	public Object excuteCustomSql(String sql) {
@@ -89,17 +89,17 @@ public class Data {
 	 * @return 
 	 */
 	
-	public Set<SqliteMaster> getMasterSet() {
+	public Set<SqliteMasterDao> getMasterSet() {
 		if( smset == null ) {
-			smset = new HashSet<SqliteMaster>();
+			smset = new HashSet<SqliteMasterDao>();
 			try {
 				ResultSet rs = state.executeQuery("select * from sqlite_master");
 				while( rs.next() ) {
-					smset.add(new SqliteMaster(rs.getString(SqliteMaster.C_TYPE), 
-											rs.getString(SqliteMaster.C_NAME), 
-											rs.getString(SqliteMaster.C_TBL_NAME), 
-											rs.getInt(SqliteMaster.C_ROOTPAGE), 
-											rs.getString(SqliteMaster.C_SQL)
+					smset.add(new SqliteMasterDao(rs.getString(SqliteMasterDao.C_TYPE), 
+											rs.getString(SqliteMasterDao.C_NAME), 
+											rs.getString(SqliteMasterDao.C_TBL_NAME), 
+											rs.getInt(SqliteMasterDao.C_ROOTPAGE), 
+											rs.getString(SqliteMasterDao.C_SQL)
 											)
 							);
 				}
@@ -112,7 +112,7 @@ public class Data {
 		return smset;
 	}
 	
-	public Set<SqliteMaster> getMasterSet(boolean restate) {
+	public Set<SqliteMasterDao> getMasterSet(boolean restate) {
 		if(restate) {
 			smset = null;
 		}

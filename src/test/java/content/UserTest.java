@@ -22,6 +22,7 @@ public class UserTest {
 		
 	}
 	
+	
 //	@Test
 	public void test1() {
 		  //1. 配置类型安全的准服务注册类，这是当前应用的单例对象，不作修改，所以声明为final
@@ -41,7 +42,7 @@ public class UserTest {
 		
 	}
 	
-	@Test
+//	@Test
 	public void test2() {
 		try {
 		    Configuration lConf = new Configuration();

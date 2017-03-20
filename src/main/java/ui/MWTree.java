@@ -43,14 +43,14 @@ public class MWTree {
 				TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
 				
 				if(selRow != -1) {
-					if ( e.getClickCount() == 2 ) {
-						if( selPath.getLastPathComponent().equals(rootNode) ) {
+					if( selPath.getLastPathComponent().equals(rootNode) ) {
+						if ( e.getClickCount() == 2 ) {
 							mw.connectDatabase();
-						} else {
+						} 
+					} else if (e.getClickCount() == 1) {
 							// mw 打开相关文件信息
 							System.out.println("[Test]" + selPath.getLastPathComponent());
-						}
-					} 
+					}
 				}
 //				System.out.println("Tree selected!" +  selPath.getLastPathComponent().equals(rootNode));
 			}

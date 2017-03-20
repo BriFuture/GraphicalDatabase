@@ -7,7 +7,7 @@ import java.util.HashSet;
  * @author future
  *
  */
-public class SqliteMaster {
+public class SqliteMasterDao {
 	public static final String C_TYPE 		= "type";
 	public static final String C_NAME 		= "name";
 	public static final String C_TBL_NAME 	= "tbl_name";
@@ -16,13 +16,13 @@ public class SqliteMaster {
 	
 	public static final String[] COLUMNS = {C_TYPE, C_NAME, C_TBL_NAME, C_ROOTPAGE, C_SQL};
 	
-	private String type;
-	private String name;
-	private String tbl_name;
-	private int rootpage;
-	private String sql;
+	private String type = "";
+	private String name = "";
+	private String tbl_name = "";
+	private int rootpage = 0;
+	private String sql = "";
 	
-	public SqliteMaster(String type, String name, String tbl_name, int rootpage, String sql) {
+	public SqliteMasterDao(String type, String name, String tbl_name, int rootpage, String sql) {
 		this.type = type;
 		this.name = name;
 		this.tbl_name = tbl_name;
@@ -35,6 +35,18 @@ public class SqliteMaster {
 	 */
 	public String getType() {
 		return type;
+	}
+	
+	/**
+	 * 返回该列的类型
+	 * @param column
+	 * @return
+	 */
+	public static String getColumnType(String column) {
+		if( column == C_ROOTPAGE) {
+			return "INTEGER";
+		}
+		return "TEXT";
 	}
 
 	/**
@@ -100,9 +112,9 @@ public class SqliteMaster {
 		this.sql = sql;
 	}
 	
-	public static HashSet<SqliteMaster> getSetByType(HashSet<SqliteMaster> sm, String type) {
-		HashSet<SqliteMaster> set = new HashSet<SqliteMaster>();
-		for(SqliteMaster m : sm) {
+	public static HashSet<SqliteMasterDao> getSetByType(HashSet<SqliteMasterDao> sm, String type) {
+		HashSet<SqliteMasterDao> set = new HashSet<SqliteMasterDao>();
+		for(SqliteMasterDao m : sm) {
 			if(m.getType().toUpperCase().equals(type.toUpperCase())) {
 				set.add(m);
 			}
