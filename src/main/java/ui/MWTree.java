@@ -49,7 +49,12 @@ public class MWTree {
 						} 
 					} else if (e.getClickCount() == 1) {
 							// mw 打开相关文件信息
-							System.out.println("[Test]" + selPath.getLastPathComponent());
+							Object current = selPath.getLastPathComponent();
+							Object parent  = selPath.getParentPath().getLastPathComponent(); 
+							System.out.println("[Test]" + current.toString());
+							if( current.toString().equals("sqlite_master") ) {
+								mw.updateInfoPanel(current);
+							}
 					}
 				}
 //				System.out.println("Tree selected!" +  selPath.getLastPathComponent().equals(rootNode));

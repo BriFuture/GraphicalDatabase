@@ -1,5 +1,5 @@
 package dao;
 
-public class Index {
+public class IndexDao {
 	public static final String TYPE = "index";
 }

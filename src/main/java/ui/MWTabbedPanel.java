@@ -2,14 +2,21 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -19,12 +26,14 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import content.Data;
+import content.RecordDao;
 import content.TableDataModel;
-import dao.Index;
+import content.TableStructure;
+import content.UITableData;
+import dao.IndexDao;
 import dao.SqliteMasterDao;
-import dao.Table;
-import dao.TableStructure;
-import dao.Trigger;
+import dao.TableDao;
+import dao.TriggerDao;
 
 public class MWTabbedPanel {
 	private MainWindow mw;
@@ -45,6 +54,7 @@ public class MWTabbedPanel {
 	private JTable p1table;
 	private TableDataModel p1model;
 	
+	private String p2Tab;
 	private TitledBorder opBorder;
 	private JLabel p2label;
 	private JTextField p2text;
@@ -57,18 +67,17 @@ public class MWTabbedPanel {
 	private JTable p2table;
 	private TableDataModel p2model;
 	
-	private String p2Tab;
 	
 	private String p3Tab;
 	
 	private String p4Tab;
 	
 	private String p5Tab;
+	private GraphicalPanel p5;
+	private Graphics p5graphic;
 	
 	private Data data;
-	
-	
-//	private Data data;
+	private HashSet<SqliteMasterDao> tableset;
 	
 	public MWTabbedPanel(MainWindow mw) {
 		this.mw = mw;
@@ -90,10 +99,11 @@ public class MWTabbedPanel {
 		makePanel(2, null);
 		makePanel(3, null);
 		makePanel(4, null);
-		makePanel(5, null);
+		p5 = new GraphicalPanel();
+		p5.setName(p5Tab);
+		tabbedPane.addTab(p5.getName(), null, p5, p5.getName());
 		
-		tabbedPane.setSelectedIndex(1);
-		
+		tabbedPane.setSelectedIndex(4);
 	}
 	
 	private void makePanel(int n, Icon icon) {
@@ -102,7 +112,6 @@ public class MWTabbedPanel {
 		switch(n) {
 		case 1:
 			setPanel1(p);
-//			p.setName(p1Tab);
 			break;
 		case 2:
 			setPanel2(p);
@@ -113,9 +122,9 @@ public class MWTabbedPanel {
 		case 4:
 			setPanel4(p);
 			break;
-		case 5:
-			setPanel5(p);
-			break;
+//		case 5:
+//			setPanel5(p);
+//			break;
 		}
 		tabbedPane.addTab(p.getName(), icon, p, p.getName());
 	}
@@ -127,18 +136,19 @@ public class MWTabbedPanel {
 		return tabbedPane;
 	}
 	
-	public void add(Data d) {
+	public void setCurrentData(Data d) {
 		data = d;
 		updatePanels(data);
 	}
 	
 	private void updatePanels(Data d) {
+		/* 获取相关数据  */
 		HashSet<SqliteMasterDao> smset = (HashSet<SqliteMasterDao>) d.getMasterSet();
-		HashSet<SqliteMasterDao> tableset = SqliteMasterDao.getSetByType(smset, Table.TYPE);
-		HashSet<SqliteMasterDao> indexset = SqliteMasterDao.getSetByType(smset, Index.TYPE);
-		HashSet<SqliteMasterDao> triggerset = SqliteMasterDao.getSetByType(smset, Trigger.TYPE);
+		tableset = SqliteMasterDao.getSetByType(smset, TableDao.TYPE);
+		HashSet<SqliteMasterDao> indexset = SqliteMasterDao.getSetByType(smset, IndexDao.TYPE);
+		HashSet<SqliteMasterDao> triggerset = SqliteMasterDao.getSetByType(smset, TriggerDao.TYPE);
 		opBorder.setTitle("Operation of " + d.getName());
-		recordsLabel.setText("Number of records:  " + tableset.size());
+		recordsLabel.setText("Number of tables:  " + tableset.size());
 		indexLabel.setText("Number of indexes:  " + indexset.size());
 		triggerLabel.setText("Number of triggers:  " + triggerset.size());
 		
@@ -146,17 +156,29 @@ public class MWTabbedPanel {
 		ts.setDefaultRecords();
 		p1table.setColumnModel(ts.getTc());
 		p1model.setTablePattern(ts);
-//		System.out.println("p1model " + p1model.getValueAt(0, 3));
-//		System.out.println("p1model " + p1table.getModel().getColumnCount() + " table " + p1table.getColumnCount());
 		
 		/* p2 */
-		TableStructure ts1 = new TableStructure();
-		ts1.addRecord(15, SqliteMasterDao.C_TYPE, 	"text", false, d.getName(), 0, false);
-		ts1.addRecord(16, SqliteMasterDao.C_TYPE, 	"text", false, d.getName(), 0, false);
-		p2table.setColumnModel(ts1.getTc());
-		p2model.setTablePattern(ts1);
-//		p2table.setModel(p2model);
-		System.out.println("p2table: " + p2table.getRowCount() + " rows, " + p2table.getColumnCount() + " columns");
+		UITableData tableData = new UITableData();
+		tableData.addColumn("Row ID", String.class);
+		for(int i = 0; i < SqliteMasterDao.COLUMNS.length; i++) {
+			tableData.addColumn(SqliteMasterDao.COLUMNS[i], String.class);
+		}
+		int i = 1;
+		// 在表格中添加记录
+		for(SqliteMasterDao smd : smset) {
+			RecordDao record = new RecordDao();
+			record.addValue(i);
+			record.addValue(smd.getName());
+			record.addValue(smd.getType());
+			record.addValue(smd.getTbl_name());
+			record.addValue(smd.getRootpage());
+			record.addValue(smd.getSql());
+			tableData.addRecord(record);
+			i++;
+		}
+		p2table.setColumnModel(tableData.getTc());
+		p2model.setTablePattern(tableData);
+		System.out.println("[Test] p2table: " + p2table.getRowCount() + " rows, " + p2table.getColumnCount() + " columns");
 //		for(int j = 0; j < p2table.getRowCount(); j++) {
 //			for(int i = 0; i < p2table.getColumnCount(); i++) {
 //				System.out.print(" =" + p2table.getValueAt(j, i) + "=" + i + "=  ");
@@ -165,8 +187,16 @@ public class MWTabbedPanel {
 //		}
 //		System.out.println("=============");
 //		System.out.println("===p2model " + p2table.getModel().getColumnCount() + " table " + p2table.getColumnCount() );
+		
+		/* p5 */
+		p5.setTableSet(tableset);
+		p5.repaint();
 	}
 	
+	/**
+	 * 设置 P1 面板, 显示表结构或显示建表语句
+	 * @param p
+	 */
 	private void setPanel1(JPanel p) {
 		p.setName(p1Tab);
 		
@@ -249,6 +279,10 @@ public class MWTabbedPanel {
 		
 	}
 	
+	/**
+	 * 显示表中记录
+	 * @param p
+	 */
 	private void setPanel2(JPanel p) {
 		p.setName(p2Tab);
 		
@@ -314,6 +348,10 @@ public class MWTabbedPanel {
 		p.add(mbv2, BorderLayout.SOUTH);
 	}
 	
+	/**
+	 * 显示数据库设置
+	 * @param p
+	 */
 	private void setPanel3(JPanel p) {
 		p.setName(p3Tab);
 	}
@@ -322,18 +360,51 @@ public class MWTabbedPanel {
 		p.setName(p4Tab);
 	}
 	
-	private void setPanel5(JPanel p) {
-		p.setName(p5Tab);
-	}
+	/**
+	 * 以表为单位，进行绘图
+	 * @param p
+	 */
+//	private void setPanel5(JPanel p) {
+//		p.setName(p5Tab);
+//		
+//		p.addComponentListener(new ComponentAdapter() {
+//			@Override
+//			public void componentResized(ComponentEvent e) {
+//				graphicDatabase();
+//			}
+//		});
+//	}
 	
 	private class BtnListener implements ActionListener{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			System.out.println("[Test] Btn clicked");
+//			System.out.println("[Test] Btn clicked");
+//			if(e.getSource().equals(p1ExportBtn)) {
+//				openDialog();
+//			}
+			openDialog( (JButton) e.getSource() );
 		}
 		
+	}
+	
+	
+
+	/***
+	 * 清空所有面板的内容
+	 */
+	public void clearContent() {
+//		p1model
+	}
+	
+	public void openDialog(JButton b) {
+		JDialog dialog = new JDialog(mw, b.getActionCommand());
+		dialog.setSize(200, 200);
+		BaseWindow.setComponentCenter(dialog, mw);
+		dialog.add(new JLabel( b.getActionCommand() ));
+//		mw.setFocusableWindowState(false);
+//		int result = dialog.show
+//		if(dialog.get)
 	}
 	
 

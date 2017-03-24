@@ -17,9 +17,11 @@ import database.DBManager;
  *
  */
 public class Data {
-	/* 数据库绝对路径 */
+	/* 数据库文件 */
 	private File dbFile;
+	/* 数据库绝对路径 */
 	private String path;
+	/* 数据库管理器 */
 	private DBManager mgr;
 	private DB db;
 	private Statement state;
@@ -44,7 +46,7 @@ public class Data {
 	}
 	
 	/**
-	 * 返回数据库文件名
+	 * 返回数据库文件名（不包含路径）
 	 * @return
 	 */
 	public String getName() {

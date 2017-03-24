@@ -3,8 +3,6 @@ package content;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
-import dao.TablePatternInterface;
-
 public class TableDataModel extends AbstractTableModel {
 
 	/**

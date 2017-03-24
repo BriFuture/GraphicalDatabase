@@ -1,5 +1,5 @@
 package dao;
 
-public class View {
+public class ViewDao {
 	public static final String TYPE = "view";
 }

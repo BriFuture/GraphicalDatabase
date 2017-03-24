@@ -8,8 +8,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import dao.TableStructure;
-
 public class GDTableColumnTest {
 	GDTableColumn gdtc;
 	TableStructure ts;

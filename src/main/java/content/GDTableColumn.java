@@ -89,7 +89,8 @@ public class GDTableColumn implements TableColumnModel,
     	tc.setHeaderValue(columnName);
     	addColumn(tc);
     }
-
+    
+    @Override
     public void removeColumn(TableColumn column) {
         int columnIndex = tableColumns.indexOf(column);
 
@@ -108,6 +109,18 @@ public class GDTableColumn implements TableColumnModel,
             fireColumnRemoved(new TableColumnModelEvent(this,
                                            columnIndex, 0));
         }
+    }
+    
+    public void removeColumn(int columnIndex) {
+    	  if (selectionModel != null) {
+              selectionModel.removeIndexInterval(columnIndex,columnIndex);
+          }
+    	  TableColumn column = tableColumns.get(columnIndex);
+    	  column.removePropertyChangeListener(this);
+    	  tableColumns.remove(columnIndex);
+    	  
+    	  invalidateWidthCache();
+    	  fireColumnRemoved(new TableColumnModelEvent(this, columnIndex, 0));
     }
 
     public void moveColumn(int columnIndex, int newIndex) {

@@ -1,6 +1,8 @@
 package ui;
 
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -35,5 +37,32 @@ public class BaseWindow extends JFrame {
 		});
 	}
 	
+	public static void setComponentHorizontalCenter(Component c, JFrame owner) {
+		if( owner == null ) {
+			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+			c.setLocation(0, (int) ((d.getHeight() - c.getHeight()) / 2));
+		} else {
+			c.setLocation(0, (owner.getHeight() - c.getHeight()) / 2);
+		}
+	}
+	
+	public static void setComponentVerticalCenter(Component c, JFrame owner) {
+		if( owner == null ) {
+			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+			c.setLocation((int) ((d.getWidth() - c.getWidth()) / 2), 0);
+		} else {
+			c.setLocation( (owner.getWidth() - c.getWidth()) / 2, 0);
+		}
+	}
+	
+	public static void setComponentCenter(Component c, JFrame owner) {
+		if( owner == null ) {
+			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+			c.setLocation((int) ((d.getWidth() - c.getWidth()) / 2), (int) ((d.getHeight() - c.getHeight()) / 2));
+		} else {
+			c.setLocation( (owner.getWidth() - c.getWidth()) / 2, (owner.getHeight() - c.getHeight()) / 2);
+		}
+	}
 
+		
 }

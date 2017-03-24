@@ -1,5 +1,5 @@
 package dao;
 
-public class Trigger {
+public class TriggerDao {
 	public static final String TYPE = "trigger";
 }

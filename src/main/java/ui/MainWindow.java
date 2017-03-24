@@ -3,6 +3,10 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
 import java.util.ArrayList;
@@ -47,7 +51,7 @@ public class MainWindow extends BaseWindow{
 	
 	public MainWindow() {
 		setTitle(windowTitle);
-		init();
+		initMW();
 		initChooser();
 		// 最大化
 		setExtendedState(MAXIMIZED_BOTH);	
@@ -55,7 +59,7 @@ public class MainWindow extends BaseWindow{
 		test();
 	}
 	
-	private void init() {
+	private void initMW() {
 		// 设置菜单栏
 		menubar = new MWMenuBar(this);
 		setJMenuBar(menubar.getMenuBar());
@@ -73,6 +77,7 @@ public class MainWindow extends BaseWindow{
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, tabbedpanel.getTabbedPane());
 		splitPane.setOneTouchExpandable(true);
 		getContentPane().add(BorderLayout.CENTER, splitPane);
+		
 	}
 	
 	/* 初始化文件选择器 */
@@ -88,7 +93,7 @@ public class MainWindow extends BaseWindow{
 		chooser.addChoosableFileFilter(sqlite);
 	}
 	
-	/* 初始化状态栏 */
+	/* 初始化状态栏  */
 	private void initStatebar() {
 		statebar = new JPanel();
 		statebar.setLayout(new GridLayout(1, 5));
@@ -127,14 +132,12 @@ public class MainWindow extends BaseWindow{
 		// 防止重复添加数据库对象
 		if(!dataMap.containsKey(f)) {
 			// update opened File
-			addedFiles.add(f);
-			openAddedFile(f);
-
 			Data d = new Data(f);
+			addedFiles.add(f);
 			dataMap.put(f, d);
 			tree.insertRoot(d);
-			
-			tabbedpanel.add(d);
+
+			openAddedFile(f);
 			
 			// 菜单栏添加文件
 			menubar.addOpenedFile(f);
@@ -152,8 +155,11 @@ public class MainWindow extends BaseWindow{
 	 * @param f
 	 */
 	public void openAddedFile(File f) {
-		openedFile = f;
-		stateFileName.setText(f.getAbsolutePath());
+		if( dataMap.containsKey(f) ) {
+			openedFile = f;
+			tabbedpanel.setCurrentData(dataMap.get(f));
+			stateFileName.setText(f.getAbsolutePath());
+		}
 	}
 	
 	/**
@@ -162,9 +168,13 @@ public class MainWindow extends BaseWindow{
 	 */
 	public void closeFile(File f) {
 		addedFiles.remove(f);
+		dataMap.remove(f);
 		
 		if(f.equals(openedFile)) {
 			stateFileName.setText("");
+			tabbedpanel.clearContent();
+			/* 重新设置 openedFile */
+//			openedFile = 
 		}
 			
 		// update menubar
@@ -205,12 +215,21 @@ public class MainWindow extends BaseWindow{
 	}
 	
 	/**
+	 * 更新信息面板
+	 */
+	public void updateInfoPanel(Object obj) {
+		System.out.println("update info panel: " + obj);
+	}
+	
+	/**
 	 * 
 	 * @return  返回已经打开的所有数据库文件
 	 */
 	public Set<File> getOpenedFiles() {
 		return dataMap.keySet();
 	}
+	
+	
 	
 	private void test() {
 		String str = "C:\\Users\\future\\Documents\\my games\\Sid Meier's Civilization 5\\cache\\Localization-Korea.db";
